@@ -1,37 +1,55 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar } from 'expo-status-bar';
-import * as React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View,Text } from 'react-native';
+import { createStore,combineReducers,applyMiddleware} from "redux";
+import {Provider} from "react-redux";
+import Redux from "redux-thunk";
+import * as firebase from 'firebase';
 
-import useCachedResources from './hooks/useCachedResources';
-import BottomTabNavigator from './navigation/BottomTabNavigator';
-import LinkingConfiguration from './navigation/LinkingConfiguration';
+import ChatNavigation from "./navigation/chatNavigation";
+import authReducer from './store/reducer/auth';
+import chatReducer from "./store/reducer/chat"
 
-const Stack = createStackNavigator();
+
+
+const rootReducer = combineReducers({
+  auth: authReducer,
+  chat: chatReducer
+})
+
+const store = createStore(rootReducer,applyMiddleware(Redux));
 
 export default function App(props) {
-  const isLoadingComplete = useCachedResources();
+  var firebaseConfig = {
+    apiKey: "api-key",
+    authDomain: "project-id.firebaseapp.com",
+    databaseURL: "https://project-id.firebaseio.com",
+    projectId: "project-id",
+    storageBucket: "project-id.appspot.com",
+    messagingSenderId: "sender-id",
+    appId: "app-id",
+    measurementId: "G-measurement-id",
+  };
+  useEffect(()=>{
+      firebase.initializeApp(firebaseConfig);
+   
+    
+  },[firebaseConfig])
 
-  if (!isLoadingComplete) {
-    return null;
-  } else {
-    return (
-      <View style={styles.container}>
-        <NavigationContainer linking={LinkingConfiguration}>
-          <Stack.Navigator>
-            <Stack.Screen name="Root" component={BottomTabNavigator} />
-          </Stack.Navigator>
-        </NavigationContainer>
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
+  
+
+
+  return(<Provider store={store}>
+  <ChatNavigation />
+  </Provider>)
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    justifyContent:'center',
+    alignItems:'center'
   },
 });
+
+
